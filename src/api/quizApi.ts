@@ -1,23 +1,31 @@
+import axios from "axios";
 
-export const fetchCategories = async () => {
-    const response = await fetch('https://opentdb.com/api_category.php')
-    const data = await response.json()
-    return data.trivia_categories
+export interface TriviaQuestion {
+  question: string;
+  correct_answer: string;
+  incorrect_answers: string[];
+  category: string;
+  difficulty: string;
 }
 
-export const fetchQuestions = async (categoryId: number, difficulty: string) => {
-    const response = await fetch(`https://opentdb.com/api.php?amount=10&category=${categoryId}&difficulty=${difficulty}&type=multiple`)
-    const data = await response.json()
-    return data.results.map((item: any) => ({
-        question : item.question,
-        answers: shuffle([
-            ...item.incorrect_answers.map((ans: any) => ({ text: ans, isCorrect: false })),
-            { text: item.correct_answer, isCorrect: true },
-          ]),
-        
-    }))
+export interface TriviaCategory {
+  id: number;
+  name: string;
 }
 
-const shuffle = (array : any[]) => {
-    array.sort(() => Math.random() - 0.5)
-}
+export const fetchTriviaCategories = async (): Promise<TriviaCategory[]> => {
+  const response = await axios.get<{ trivia_categories: TriviaCategory[] }>(
+    "https://opentdb.com/api_category.php"
+  );
+  return response.data.trivia_categories;
+};
+
+export const fetchTriviaQuestions = async (
+  amount: number = 10,
+  difficulty: string = "easy",
+  categoryId?: number
+) => {
+  const url = `https://opentdb.com/api.php?amount=${amount}&difficulty=${difficulty}&type=multiple &category=${categoryId}`
+  const response = await axios.get<{ results: TriviaQuestion[] }>(url);
+  return response.data.results;
+};
