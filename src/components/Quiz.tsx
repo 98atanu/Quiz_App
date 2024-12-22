@@ -1,58 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import QuestionCard from './QuestionCard';
-import { DNA } from 'react-loader-spinner';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { resetQuiz, nextQuestion, incrementScore } from "../store/slices/quizSlice";
+import QuestionCard from "./QuestionCard";
+import { motion } from "framer-motion";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-const Quiz = ({ settings, onQuizEnd }: any) => {
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
-  useEffect(() => {
-    const { category, difficulty } = settings;
-    const url = `https://opentdb.com/api.php?amount=10&category=${category}&difficulty=${difficulty}&type=multiple`;
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedQuestions = data.results.map((q: any) => ({
-          ...q,
-          answers: shuffleArray([...q.incorrect_answers, q.correct_answer]),
-        }));
-        setQuestions(formattedQuestions);
-      });
-  }, [settings]);
+const Quiz = () => {
+  const dispatch = useDispatch();
+  const { questions, currentQuestionIndex, score, settings } = useSelector((state) => state.quiz);
 
-  const shuffleArray = (array: any) => array.sort(() => Math.random() - 0.5);
-
-  const handleAnswer = (answer: string) => {
-    if (answer === questions[currentQuestionIndex].correct_answer) {
-      setScore((prev) => prev + 1);
+  // Handle answer submission
+  const handleAnswer = (isCorrect) => {
+    if (isCorrect) {
+      dispatch(incrementScore());
     }
+
     if (currentQuestionIndex + 1 < questions.length) {
-      setCurrentQuestionIndex((prev) => prev + 1);
+      dispatch(nextQuestion());
     } else {
-      onQuizEnd(score + 1);
+      // End of quiz
+      dispatch(nextQuestion());
     }
   };
 
-  if (!questions.length) return (
-    <DNA
-  visible={true}
-  height="100"
-  width="100"
-  ariaLabel="dna-loading"
-  wrapperStyle={{}}
-  wrapperClass="dna-wrapper"
-  />
-  );
+  // Restart the quiz
+  const handleRestart = () => {
+    dispatch(resetQuiz());
+  };
 
+  // Render the final score with a pie chart
+  if (currentQuestionIndex >= questions.length) {
+    const correctAnswers = score;
+    const incorrectAnswers = questions.length - score;
+
+    const pieData = {
+      labels: ["Correct", "Incorrect"],
+      datasets: [
+        {
+          data: [correctAnswers, incorrectAnswers],
+          backgroundColor: ["#26543d", "#e0f299"],
+          hoverBackgroundColor: ["#26543d", "#d4ed91"],
+        },
+      ],
+    };
+
+    const pieOptions = {
+      plugins: {
+        legend: {
+          labels: {
+            color: "#e0f299",
+            font: {
+              size: 14, 
+            },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const label = context.label || "";
+              const value = context.raw;
+              return `${label}: ${value}`;
+            },
+          },
+          backgroundColor: "#26543d", // Tooltip background color
+          titleColor: "#e0f299", // Tooltip title color
+          bodyColor: "#e0f299", // Tooltip text color
+        },
+      },
+    };
+
+    return (
+      <motion.div
+        className="p-6 max-w-md mx-auto bg-[#2f5450] rounded-lg shadow-lg space-y-6"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <h1 className="text-2xl font-bold text-[#e0f299] text-center">Quiz Completed!</h1>
+        <div className="flex justify-center">
+          <Pie data={pieData} options={pieOptions} />
+        </div>
+        <p className="text-center text-[#e0f299] font-bold text-lg">
+          You scored {score} out of {questions.length}.
+        </p>
+        <button
+          onClick={handleRestart}
+          className="w-full bg-[#e0f299] text-[#2f5450] font-bold py-2 rounded-lg hover:bg-[#d6e3a5]"
+        >
+          Restart Quiz
+        </button>
+      </motion.div>
+    );
+  }
+
+  // Render the quiz questions
   return (
-    <div className="p-6 max-w-md mx-auto bg-[#2f5450] rounded-xl shadow-md space-y-4">
-      <h1 className="text-2xl text-[#e0f299] font-bold underline">Choose the correct answer:</h1>
+    <motion.div
+      className="p-6 max-w-md mx-auto bg-[#2f5450] rounded-lg shadow-lg space-y-4"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
+      <h1 className="text-xl font-bold text-[#e0f299] text-center">
+        Question {currentQuestionIndex + 1}/{questions.length}
+      </h1>
       <QuestionCard
         question={questions[currentQuestionIndex]}
         onAnswer={handleAnswer}
       />
-    </div>
+      <p className="text-[#e0f299] text-center font-medium">Score: {score}</p>
+    </motion.div>
   );
 };
 

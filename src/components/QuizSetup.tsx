@@ -1,82 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTriviaCategories, fetchTriviaQuestions } from "../api/quizApi";
+import { setSettings, setQuestions, setLoading, setError } from "../store/slices/quizSlice";
+import { motion } from "framer-motion";
 
-const QuizSetup = ({ onStartQuiz }: any) => {
+const QuizSetup = () => {
+  const dispatch = useDispatch();
+  const { isLoading, error } = useSelector((state: any) => state.quiz);
+
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState('');
-  const [difficulty, setDifficulty] = useState('easy');
+  const [category, setCategory] = useState("");
+  const [difficulty, setDifficulty] = useState("easy");
 
+  // Fetch trivia categories when the component mounts
   useEffect(() => {
-    fetch('https://opentdb.com/api_category.php')
-      .then((res) => res.json())
-      .then((data) => setCategories(data.trivia_categories));
-  }, []);
+    const loadCategories = async () => {
+      try {
+        const data = await fetchTriviaCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        dispatch(setError("Failed to load categories. Please try again later."));
+      }
+    };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    loadCategories();
+  }, [dispatch]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onStartQuiz({ category, difficulty });
+    dispatch(setError(null));
+    dispatch(setLoading(true));
+
+    try {
+      dispatch(setSettings({ category, difficulty }));
+
+      const questions = await fetchTriviaQuestions(10, difficulty, parseInt(category));
+      dispatch(setQuestions(questions));
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+      dispatch(setError("Failed to fetch questions. Please try again later."));
+    } finally {
+      dispatch(setLoading(false));
+    }
   };
 
   return (
     <motion.div
-      className="p-6 max-w-[600px] h-auto  bg-[#2f5450] rounded-xl shadow-lg shadow-[#2f5450] space-y-4"
+      className="p-6 max-w-md mx-auto bg-[#2f5450] rounded-lg shadow-lg shadow-[#244642] space-y-4"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
     >
-      <motion.h1
-        className="text-3xl font-bold text-[#e0f299] text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-      >
-        Quiz App
-      </motion.h1>
+      <h1 className="text-3xl text-[#e0f299] font-bold  text-center">Quiz App</h1>
+      {error && (
+        <p className="text-red-500 text-center" role="alert">
+          {error}
+        </p>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 text-[#e0f299] text-lg font-semibold">
-            Category
-          </label>
-          <motion.select
-          whileHover={{ scale: 1.1, backgroundColor: '#cbdd8a' }}
-          whileTap={{ scale: 0.9 }}
+          <label className="block mb-1 text-[#e0f299] text-lg font-semibold">Category</label>
+          <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full border bg-[#e0f299] font-semibold text-sm text-[#2f5450] outline-[#2f5450] rounded-lg p-2"
+            className="w-full border bg-[#e0f299] text-[#2f5450] rounded-lg p-2 font-medium"
           >
             <option value="">Any Category</option>
-            {categories.map((category: any) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
+            {categories.map((cat: any) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
               </option>
             ))}
-          </motion.select>
+          </select>
         </div>
         <div>
-          <label className="block mb-1 text-[#e0f299] text-lg font-semibold">
-            Difficulty
-          </label>
-          <motion.select
-          whileHover={{ scale: 1.1, backgroundColor: '#cbdd8a' }}
-          whileTap={{ scale: 0.9 }}
+          <label className="block mb-1 text-[#e0f299] text-lg font-semibold">Difficulty</label>
+          <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="w-full border bg-[#e0f299] outline-[#2f5450] font-semibold text-sm text-[#2f5450] rounded-lg p-2 mb-4"
+            className="w-full border bg-[#e0f299] text-[#2f5450] rounded-lg p-2 font-medium mb-3"
           >
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
-          </motion.select>
+          </select>
         </div>
-        <motion.button
-        whileHover={{ scale: 1.1, backgroundColor: '#d6e3a5' }}
-        whileTap={{ scale: 0.9 }}
+        <button
           type="submit"
-          className="w-full bg-[#e0f299] text-[#2f5450] text-lg font-bold py-2 rounded-lg"
-          
+          className="w-full bg-[#e0f299] text-[#2f5450] text-lg font-bold py-2 rounded-lg hover:bg-[#d6e3a5] "
         >
           Start Quiz
-        </motion.button>
+        </button>
       </form>
     </motion.div>
   );

@@ -1,8 +1,8 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   { ignores: ['dist'] },
@@ -18,14 +18,21 @@ export default tseslint.config(
       'react-refresh': reactRefresh,
     },
     rules: {
+      // Include recommended rules from react-hooks
       ...reactHooks.configs.recommended.rules,
+      
+      // Custom TypeScript rules
+      '@typescript-eslint/no-explicit-any': 'off', // Allow 'any' type without warnings/errors
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }], // Allow unused variables if prefixed with '_'
+      
+      // Disable default no-unused-vars rule (since it conflicts with TypeScript version)
+      'no-unused-vars': 'off',
+      
+      // React Refresh specific rule for Fast Refresh compatibility
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-explicit-any": "none",
-      "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
     },
-  },
-)
+  }
+);

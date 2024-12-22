@@ -1,35 +1,44 @@
 import React, { useEffect, useState } from "react";
-import { TriviaQuestion } from "../api/quizApi";
+import { motion } from "framer-motion";
+import { TriviaQuestion } from "../types";
 
-
-interface QuestionProps {
+interface QuestionCardProps {
   question: TriviaQuestion;
-  onAnswer: (isCorrect: any) => void;
+  onAnswer: (isCorrect: boolean) => void;
 }
 
-const QuestionCard: React.FC<QuestionProps> = ({ question, onAnswer }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer }) => {
   const [shuffledAnswers, setShuffledAnswers] = useState<string[]>([]);
 
   useEffect(() => {
-    const shuffled = [...question.incorrect_answers, question.correct_answer].sort(() => Math.random() - 0.5);
+    const shuffled = [...question.incorrect_answers, question.correct_answer].sort(
+      () => Math.random() - 0.5
+    );
     setShuffledAnswers(shuffled);
   }, [question]);
 
   return (
-    <div>
-      <h2 className="text-lg font-bold text-[#e0f299] mb-4">{question.question}</h2>
-      <div className="space-y-3">
+    <motion.div
+      className="space-y-4"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <h2 className="text-lg font-bold text-[#e0f299]">{question.question}</h2>
+      <div className="space-y-2">
         {shuffledAnswers.map((answer, index) => (
-          <button
+          <motion.button
             key={index}
-            className="w-full px-4 py-2 text-left text-[#2f5450] bg-[#e0f299] hover:bg-[#cbdd8a] rounded "
+            whileHover={{ scale: 1.05, backgroundColor: "#cbdd8a" }}
+            whileTap={{ scale: 0.9 }}
+            className="w-full px-4 py-2 text-left text-[#2f5450] bg-[#e0f299] rounded-lg"
             onClick={() => onAnswer(answer === question.correct_answer)}
           >
             {answer}
-          </button>
+          </motion.button>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
