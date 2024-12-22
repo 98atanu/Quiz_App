@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { resetQuiz, nextQuestion, incrementScore } from "../store/slices/quizSlice";
+import { resetQuiz, nextQuestion, incrementScore } from "../store/quizSlice";
 import QuestionCard from "./QuestionCard";
 import { motion } from "framer-motion";
 import { Pie } from "react-chartjs-2";
@@ -11,10 +11,10 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Quiz = () => {
   const dispatch = useDispatch();
-  const { questions, currentQuestionIndex, score, settings } = useSelector((state) => state.quiz);
+  const { questions, currentQuestionIndex, score, settings } = useSelector((state: any) => state.quiz);
 
   // Handle answer submission
-  const handleAnswer = (isCorrect) => {
+  const handleAnswer = (isCorrect: any) => {
     if (isCorrect) {
       dispatch(incrementScore());
     }

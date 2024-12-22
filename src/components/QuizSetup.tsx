@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTriviaCategories, fetchTriviaQuestions } from "../api/quizApi";
-import { setSettings, setQuestions, setLoading, setError } from "../store/slices/quizSlice";
+import { setSettings, setQuestions, setLoading, setError } from "../store/quizSlice";
 import { motion } from "framer-motion";
+import { Flip, ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const QuizSetup = () => {
   const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state: any) => state.quiz);
+  const { error } = useSelector((state: any) => state.quiz);
 
   const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState("");
@@ -16,11 +18,12 @@ const QuizSetup = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const data = await fetchTriviaCategories();
+        const data: any = await fetchTriviaCategories();
         setCategories(data);
       } catch (err) {
         console.error("Error fetching categories:", err);
-        dispatch(setError("Failed to load categories. Please try again later."));
+        toast.error("Please select Category and Difficulty.");
+       
       }
     };
 
@@ -38,8 +41,7 @@ const QuizSetup = () => {
       const questions = await fetchTriviaQuestions(10, difficulty, parseInt(category));
       dispatch(setQuestions(questions));
     } catch (err) {
-      console.error("Error fetching questions:", err);
-      dispatch(setError("Failed to fetch questions. Please try again later."));
+      toast.error("Failed to fetch questions. Please try again later.");
     } finally {
       dispatch(setLoading(false));
     }
@@ -93,6 +95,19 @@ const QuizSetup = () => {
           Start Quiz
         </button>
       </form>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Flip}
+      />
     </motion.div>
   );
 };
