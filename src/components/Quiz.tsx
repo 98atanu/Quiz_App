@@ -5,18 +5,25 @@ import QuestionCard from "./QuestionCard";
 import { motion } from "framer-motion";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { useSnackbar } from "notistack";
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Quiz = () => {
   const dispatch = useDispatch();
-  const { questions, currentQuestionIndex, score, settings } = useSelector((state) => state.quiz);
+  const { questions, currentQuestionIndex, score } = useSelector((state: any) => state.quiz);
 
+  ChartJS.register(ArcElement, Tooltip, Legend);
+
+  const {enqueueSnackbar} = useSnackbar();
+  
   // Handle answer submission
-  const handleAnswer = (isCorrect) => {
+  const handleAnswer = (isCorrect : boolean) => {
     if (isCorrect) {
       dispatch(incrementScore());
+      enqueueSnackbar("Correct Answer!!!",  {variant: "success"} )
+    }
+    else {
+      enqueueSnackbar("Incorrect Answer!!!", {variant : "error"})
     }
 
     if (currentQuestionIndex + 1 < questions.length) {

@@ -10,7 +10,6 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#e0f299] flex items-center justify-center p-4">
-      {/* Conditionally render QuizSetup or Quiz based on settings */}
       {!settings ? (
         <QuizSetup />
       ) : questions.length ? (
