@@ -14,7 +14,6 @@ const QuizSetup = () => {
 
   const [categories, setCategories] = useState([]);
 
-  // Fetch trivia categories when the component mounts
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -29,7 +28,6 @@ const QuizSetup = () => {
     loadCategories();
   }, [dispatch, enqueueSnackbar]);
 
-  // Formik configuration
   const formik = useFormik({
     initialValues: {
       category: "",

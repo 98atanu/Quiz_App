@@ -16,7 +16,6 @@ const Quiz = () => {
 
   const {enqueueSnackbar} = useSnackbar();
   
-  // Handle answer submission
   const handleAnswer = (isCorrect : boolean) => {
     if (isCorrect) {
       dispatch(incrementScore());
@@ -29,17 +28,14 @@ const Quiz = () => {
     if (currentQuestionIndex + 1 < questions.length) {
       dispatch(nextQuestion());
     } else {
-      // End of quiz
       dispatch(nextQuestion());
     }
   };
 
-  // Restart the quiz
   const handleRestart = () => {
     dispatch(resetQuiz());
   };
 
-  // Render the final score with a pie chart
   if (currentQuestionIndex >= questions.length) {
     const correctAnswers = score;
     const incorrectAnswers = questions.length - score;
@@ -73,9 +69,9 @@ const Quiz = () => {
               return `${label}: ${value}`;
             },
           },
-          backgroundColor: "#26543d", // Tooltip background color
-          titleColor: "#e0f299", // Tooltip title color
-          bodyColor: "#e0f299", // Tooltip text color
+          backgroundColor: "#26543d", 
+          titleColor: "#e0f299", 
+          bodyColor: "#e0f299",
         },
       },
     };
@@ -104,7 +100,6 @@ const Quiz = () => {
     );
   }
 
-  // Render the quiz questions
   return (
     <motion.div
       className="p-6 max-w-md mx-auto bg-[#2f5450] rounded-lg shadow-lg space-y-4"
