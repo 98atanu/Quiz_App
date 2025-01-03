@@ -1,4 +1,3 @@
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { resetQuiz, nextQuestion, incrementScore } from "../store/slices/quizSlice";
 import QuestionCard from "./QuestionCard";
