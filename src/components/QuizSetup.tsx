@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTriviaCategories, fetchTriviaQuestions } from "../api/quizApi";
 import { setSettings, setQuestions, setLoading, setError } from "../store/slices/quizSlice";
